@@ -6,8 +6,17 @@ on:
 
 jobs:
   build:
-
-    runs-on: ubuntu-latest
+    strategy:
+      # Keep running so we can see if other tests pass
+      fail-fast: false
+      matrix:
+        python-version:
+          - '3.8'
+          - '3.9'
+          - '3.10'
+        os:
+          - ubuntu-latest
+    runs-on: ${{ matrix.os }}
     
     services:
       # Label used to access the service container
@@ -27,11 +36,14 @@ jobs:
       TESTMODEL_URL: http://localhost:8080/intermine-demo
       TESTMODEL_PATH: intermine-demo
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up python 3.7
-      uses: actions/setup-python@v2
+    - uses: actions/checkout@v3
+    - name: Set up python {{ matrix.python-version }}
+      uses: actions/setup-python@v4
       with:
-        python-version: '3.7'
+        python-version: ${{ matrix.python-version }}
+    - name: Install
+      run: |
+        sudo apt-get install libxml2-dev libxslt-dev
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
